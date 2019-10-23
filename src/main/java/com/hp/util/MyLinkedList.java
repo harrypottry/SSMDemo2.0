@@ -8,8 +8,7 @@ import java.util.NoSuchElementException;
  * @时间:2018/12/23-1:01
  * @说明：
  */
-public class MyLinkedList<E> implements MyList<E>
-{
+public class MyLinkedList<E> implements MyList<E> {
     private int size;
     /**
      * 头部

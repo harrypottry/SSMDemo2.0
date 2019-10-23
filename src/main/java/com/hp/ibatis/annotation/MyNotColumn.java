@@ -12,6 +12,5 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MyNotColumn
-{
+public @interface MyNotColumn {
 }

@@ -16,76 +16,57 @@ import static com.hp.ibatis.enums.AutoIncrement.TRUE;
  * @时间：18-12-24-下午4:43
  * @说明：
  */
-public class AutoTables
-{
+public class AutoTables {
     private String dir;
     private String webPath;
 
-    public AutoTables()
-    {
+    public AutoTables() {
         this.dir = MyAnnotationConfigBuilder.SEPARATE;
         scanPath("src" + dir + "main" + dir + "java" + dir);
     }
 
-    private void init()
-    {
+    private void init() {
         webPath = this.getClass().getClassLoader().getResource("/").getPath();
         File[] files = new File(webPath).listFiles();
-        for (File f : files)
-        {
+        for (File f : files) {
             test(f.getAbsolutePath());
         }
     }
 
-    private void test(String path)
-    {
+    private void test(String path) {
         File file = new File(path);
-        if (file.isDirectory())
-        {
-            for (File f : file.listFiles())
-            {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
                 test(f.getAbsolutePath());
             }
-        } else
-        {
-            if (path.endsWith(".class"))
-            {
+        } else {
+            if (path.endsWith(".class")) {
                 int firstIndex = path.indexOf("classes");
                 int lastIndex = path.lastIndexOf(".");
                 path = path.substring(0, lastIndex);
                 String classpath=path.substring(firstIndex+8).replace(dir,".");
-                try
-                {
+                try {
                     Class<?> clazz=Class.forName(classpath);
-                    if(clazz.isAnnotationPresent(MyEntry.class))
-                    {
+                    if(clazz.isAnnotationPresent(MyEntry.class)) {
                         loadEntry(clazz);
                     }
-                }catch (Exception e)
-                {
+                }catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
     }
 
-    private void scanPath(String path)
-    {
-        if (new File(path).length() == 0)
-        {
+    private void scanPath(String path) {
+        if (new File(path).length() == 0) {
             init();
-        }else
-        {
+        }else {
             File[] files = new File(path).listFiles((dir, src) -> dir.isDirectory() || src.endsWith(".java"));
-            if (files != null)
-            {
-                for (File f : files)
-                {
-                    if (f.isDirectory())
-                    {
+            if (files != null) {
+                for (File f : files) {
+                    if (f.isDirectory()) {
                         scanPath(f.getAbsolutePath());
-                    } else
-                    {
+                    } else {
                         loadEntry(f.getAbsolutePath());
                     }
                 }
@@ -93,98 +74,78 @@ public class AutoTables
         }
     }
 
-    private void loadEntry(String path)
-    {
+    private void loadEntry(String path) {
         int index = path.indexOf("src" + dir + "main" + dir + "java" + dir);
         int lastIndex = path.lastIndexOf(".");
         Class<?> clazz;
-        try
-        {
+        try {
             clazz = Class.forName(path.substring(index + 14, lastIndex).replace(dir, "."));
-        } catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             System.err.println("路径找不到：" + path.substring(index + 14, lastIndex).replace(dir, "."));
             return;
         }
-        if (clazz.isAnnotationPresent(MyEntry.class) && clazz.isAnnotationPresent(MyTable.class))
-        {
+        if (clazz.isAnnotationPresent(MyEntry.class) && clazz.isAnnotationPresent(MyTable.class)) {
             loadEntry(clazz);
         }
     }
 
-    private void loadEntry(Class<?> clazz)
-    {
+    private void loadEntry(Class<?> clazz) {
         System.out.println("找到实体：" + clazz);
         MyTable table = clazz.getAnnotation(MyTable.class);
         String tableName = table.name();
 
-        if (MySQLUtil.tableIsExis(tableName))
-        {
+        if (MySQLUtil.tableIsExis(tableName)) {
             Map<String, String[]> map = MySQLUtil.getTableStructure(tableName);
             Set<String> fieldSet = new HashSet<>();
             Field[] fields = clazz.getDeclaredFields();
-            for (Field f : fields)
-            {
-                if (f.isAnnotationPresent(MyNotColumn.class))
-                {
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(MyNotColumn.class)){
                     System.out.println("不映射字段");
-                } else
-                {
+                }else {
                     String fieldName;
-                    if (f.isAnnotationPresent(MyColumn.class))
-                    {
+                    if (f.isAnnotationPresent(MyColumn.class)) {
                         MyColumn myColumn = f.getAnnotation(MyColumn.class);
                         fieldName = myColumn.value();
-                        if (fieldName.equals(""))
-                        {
+                        if (fieldName.equals("")) {
                             fieldName = f.getName();
                         }
-                    } else
-                    {
+                    } else {
                         fieldName = f.getName();
                     }
                     StringBuilder sql = new StringBuilder();
                     boolean isId = f.isAnnotationPresent(MyId.class);
                     boolean isIncrement = false;
-                    if (isId)
-                    {
+                    if (isId) {
                         MyId myId = f.getAnnotation(MyId.class);
                         isIncrement = myId.value() == TRUE;
                     }
-                    if (map.containsKey(fieldName))
-                    {
+                    if (map.containsKey(fieldName)) {
                         System.out.println(fieldName + "存在，准备更新");
                         sql.append("ALTER TABLE " + tableName + " MODIFY ");
                         String type = MyFieldUtil.getDefultType(f);
                         int len = MyFieldUtil.getDefultLen(f);
                         boolean isUnique = false;
                         boolean isNullable = false;
-                        if (f.isAnnotationPresent(MyColumn.class))
-                        {
+                        if (f.isAnnotationPresent(MyColumn.class)) {
                             MyColumn myColumn = f.getAnnotation(MyColumn.class);
-                            if (!myColumn.type().equals(""))
-                            {
+                            if (!myColumn.type().equals("")) {
                                 type = myColumn.type();
                             }
-                            if (myColumn.length() != -1)
-                            {
+                            if (myColumn.length() != -1) {
                                 len = myColumn.length();
                             }
                             isUnique = myColumn.unique();
                             isNullable = myColumn.nullable();
                         }
 
-                        if (type.equals(map.get(fieldName)[0]) && len == Integer.parseInt(map.get(fieldName)[1]))
-                        {
+                        if (type.equals(map.get(fieldName)[0]) && len == Integer.parseInt(map.get(fieldName)[1])) {
                             System.out.println("与原表一致");
-                        } else
-                        {
+                        } else {
                             System.out.println("type=" + type);
                             System.out.println("len=" + len);
                             System.out.println(fieldName + Arrays.toString(map.get(fieldName)));
                             String exeSql = MySQLUtil.generateSQL(sql, fieldName, type, len, isUnique, isNullable, false, false);
-                            if (isIncrement)
-                            {
+                            if (isIncrement) {
                                 System.out.println("当前=" + fieldName);
                                 exeSql = exeSql + " auto_increment";
                             }
@@ -192,31 +153,26 @@ public class AutoTables
                             boolean result = MySQLUtil.exeSql(exeSql);
                             System.out.println("result=" + result);
                         }
-                    } else
-                    {
+                    } else {
                         // ALTER TABLE [表名] ADD [字段名] NVARCHAR (50) NULL
                         sql.append("ALTER TABLE " + tableName + " ADD ");
                         String type;
                         boolean isUnique;
                         boolean isNullable;
                         int len;
-                        if (f.isAnnotationPresent(MyColumn.class))
-                        {
+                        if (f.isAnnotationPresent(MyColumn.class)) {
                             MyColumn myColumn = f.getAnnotation(MyColumn.class);
                             isUnique = myColumn.unique();
                             isNullable = myColumn.nullable();
                             type = myColumn.type();
-                            if (type.equals(""))
-                            {
+                            if (type.equals("")) {
                                 type = MyFieldUtil.getDefultType(f);
                             }
                             len = myColumn.length();
-                            if (len == -1)
-                            {
+                            if (len == -1) {
                                 len = MyFieldUtil.getDefultLen(f);
                             }
-                        } else
-                        {
+                        } else {
                             isUnique = false;
                             isNullable = false;
                             len = MyFieldUtil.getDefultLen(f);
@@ -224,11 +180,9 @@ public class AutoTables
                         }
                         String exeSql = MySQLUtil.generateSQL(sql, fieldName, type, len, isUnique, isNullable, isId, isIncrement);
                         System.out.println("新增字段，SQL语句=" + exeSql);
-                        try
-                        {
+                        try {
                             MySQLUtil.exeSql(exeSql);
-                        } catch (Exception e)
-                        {
+                        } catch (Exception e) {
                             MySQLUtil.exeSql("ALTER TABLE " + tableName + " DROP COLUMN " + fieldName);
                             System.out.println("修改的是主键");
                             MySQLUtil.exeSql(exeSql);
@@ -238,24 +192,19 @@ public class AutoTables
                 }
             }
             // 删除没有映射的字段
-            for (String s : map.keySet())
-            {
-                if (!fieldSet.contains(s))
-                {
+            for (String s : map.keySet()) {
+                if (!fieldSet.contains(s)) {
                     System.out.println(s + "没有映射，需要删除");
                     MySQLUtil.exeSql("ALTER TABLE " + tableName + " DROP COLUMN " + s);
                 }
             }
-        } else
-        {
+        } else {
             System.out.println("新建表：" + tableName);
             StringBuilder sql = new StringBuilder();
             sql.append("create table " + tableName + "(");
             Field[] fields = clazz.getDeclaredFields();
-            for (Field f : fields)
-            {
-                if (!f.isAnnotationPresent(MyNotColumn.class))
-                {
+            for (Field f : fields) {
+                if (!f.isAnnotationPresent(MyNotColumn.class)) {
                     boolean isId = false;
                     boolean isIncrement = true;
                     boolean isUnique = false;
@@ -263,30 +212,25 @@ public class AutoTables
                     String value;
                     String type;
                     int len = -1;
-                    if (f.isAnnotationPresent(MyId.class))
-                    {
+                    if (f.isAnnotationPresent(MyId.class)) {
                         isId = true;
                         MyId myId = f.getAnnotation(MyId.class);
                         isIncrement = myId.value() == TRUE;
                     }
-                    if (f.isAnnotationPresent(MyColumn.class))
-                    {
+                    if (f.isAnnotationPresent(MyColumn.class)) {
                         MyColumn myColumn = f.getAnnotation(MyColumn.class);
                         isUnique = myColumn.unique();
                         isNullable = myColumn.nullable();
                         value = myColumn.value();
                         len = myColumn.length();
-                        if (len == -1)
-                        {
+                        if (len == -1) {
                             len = MyFieldUtil.getDefultLen(f);
                         }
-                        if (value.equals(""))
-                        {
+                        if (value.equals("")) {
                             value = f.getName();
                         }
                         type = myColumn.type();
-                    } else
-                    {
+                    } else {
                         value = f.getName();
                         type = MyFieldUtil.getDefultType(f);
                         len = MyFieldUtil.getDefultLen(f);
@@ -296,8 +240,7 @@ public class AutoTables
             }
             List<String> list = MySQLUtil.getIndexNameList(fields);
 
-            for (String str : list)
-            {
+            for (String str : list) {
                 sql.append("index(" + str + "),");
             }
             sql.delete(sql.length() - 1, sql.length());

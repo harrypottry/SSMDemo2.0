@@ -12,7 +12,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MySelect
-{
+public @interface MySelect {
     String value();
 }

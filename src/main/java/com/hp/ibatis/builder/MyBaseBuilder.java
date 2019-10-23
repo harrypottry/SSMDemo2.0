@@ -5,7 +5,6 @@ package com.hp.ibatis.builder;
  * @时间：18-12-21-下午3:03
  * @说明：
  */
-public abstract class MyBaseBuilder
-{
+public abstract class MyBaseBuilder {
     
 }

@@ -58,14 +58,11 @@ public class MyConfiguration
         }
     }
 
-    private void loadDrivert()
-    {
-        try
-        {
+    private void loadDrivert() {
+        try {
             Class.forName(drivert);
             System.out.println("驱动加载完毕");
-        } catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             System.err.println("找不到驱动类：" + drivert);
         }
     }

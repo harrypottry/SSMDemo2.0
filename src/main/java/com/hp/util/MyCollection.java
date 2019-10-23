@@ -7,8 +7,7 @@ import java.util.Iterator;
  * @时间：18-12-19-下午2:03
  * @说明：自定义集合框架顶层接口
  */
-public interface MyCollection<E> extends Iterable<E>
-{
+public interface MyCollection<E> extends Iterable<E> {
     /**
      * 返回集合大小
      *

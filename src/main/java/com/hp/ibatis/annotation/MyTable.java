@@ -12,8 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MyTable
-{
+public @interface MyTable {
     String name() default "";
 
     boolean update() default false;

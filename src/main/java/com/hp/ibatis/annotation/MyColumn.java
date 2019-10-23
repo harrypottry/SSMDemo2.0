@@ -12,8 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MyColumn
-{
+public @interface MyColumn {
     String value() default "";
 
     String type() default "";

@@ -9,33 +9,27 @@ import java.util.List;
  * @时间：18-12-21-下午3:11
  * @说明：
  */
-public abstract class MyAbstractSQL
-{
+public abstract class MyAbstractSQL {
     private static final String AND = ") \nAND (";
     private static final String OR = ") \nOR (";
 
-    private static class SafeAppendable
-    {
+    private static class SafeAppendable {
         private final Appendable a;
         private boolean empty = true;
 
-        public SafeAppendable(Appendable a)
-        {
+        public SafeAppendable(Appendable a) {
             super();
             this.a = a;
         }
 
-        public SafeAppendable append(CharSequence s)
-        {
-            try
-            {
+        public SafeAppendable append(CharSequence s) {
+            try {
                 if (empty && s.length() > 0)
                 {
                     empty = false;
                 }
                 a.append(s);
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             return this;
@@ -48,10 +42,8 @@ public abstract class MyAbstractSQL
 
     }
 
-    private static class SQLStatement
-    {
-        public enum StatementType
-        {
+    private static class SQLStatement {
+        public enum StatementType {
             DELETE, INSERT, SELECT, UPDATE
         }
 
@@ -73,16 +65,11 @@ public abstract class MyAbstractSQL
         List<String> values = new ArrayList<>();
         boolean distinct;
 
-        public SQLStatement()
-        {
-
-        }
+        public SQLStatement() {}
 
         private void sqlClause(SafeAppendable builder, String keyword, List<String> parts, String open, String close,
-                               String conjunction)
-        {
-            if (!parts.isEmpty())
-            {
+                               String conjunction) {
+            if (!parts.isEmpty()) {
                 if (!builder.isEmpty())
                 {
                     builder.append("\n");
@@ -105,13 +92,10 @@ public abstract class MyAbstractSQL
             }
         }
 
-        private String selectSQL(SafeAppendable builder)
-        {
-            if (distinct)
-            {
+        private String selectSQL(SafeAppendable builder) {
+            if (distinct) {
                 sqlClause(builder, "SELECT DISTINCT", select, "", "", ", ");
-            } else
-            {
+            } else {
                 sqlClause(builder, "SELECT", select, "", "", ", ");
             }
 
@@ -124,8 +108,7 @@ public abstract class MyAbstractSQL
             return builder.toString();
         }
 
-        private void joins(SafeAppendable builder)
-        {
+        private void joins(SafeAppendable builder) {
             sqlClause(builder, "JOIN", join, "", "", "\nJOIN ");
             sqlClause(builder, "INNER JOIN", innerJoin, "", "", "\nINNER JOIN ");
             sqlClause(builder, "OUTER JOIN", outerJoin, "", "", "\nOUTER JOIN ");
@@ -133,23 +116,20 @@ public abstract class MyAbstractSQL
             sqlClause(builder, "RIGHT OUTER JOIN", rightOuterJoin, "", "", "\nRIGHT OUTER JOIN ");
         }
 
-        private String insertSQL(SafeAppendable builder)
-        {
+        private String insertSQL(SafeAppendable builder) {
             sqlClause(builder, "INSERT INTO", tables, "", "", "");
             sqlClause(builder, "", columns, "(", ")", ", ");
             sqlClause(builder, "VALUES", values, "(", ")", ", ");
             return builder.toString();
         }
 
-        private String deleteSQL(SafeAppendable builder)
-        {
+        private String deleteSQL(SafeAppendable builder) {
             sqlClause(builder, "DELETE FROM", tables, "", "", "");
             sqlClause(builder, "WHERE", where, "(", ")", " AND ");
             return builder.toString();
         }
 
-        private String updateSQL(SafeAppendable builder)
-        {
+        private String updateSQL(SafeAppendable builder) {
             sqlClause(builder, "UPDATE", tables, "", "", "");
             joins(builder);
             sqlClause(builder, "SET", sets, "", "", ", ");
@@ -157,18 +137,15 @@ public abstract class MyAbstractSQL
             return builder.toString();
         }
 
-        public String sql(Appendable a)
-        {
+        public String sql(Appendable a) {
             SafeAppendable builder = new SafeAppendable(a);
-            if (statementType == null)
-            {
+            if (statementType == null) {
                 return null;
             }
 
             String answer;
 
-            switch (statementType)
-            {
+            switch (statementType) {
                 case DELETE:
                     answer = deleteSQL(builder);
                     break;

@@ -5,8 +5,7 @@ package com.hp.util;
  * @时间：18-12-19-下午2:28
  * @说明：自定义线性表顶层接口
  */
-public interface MyList<E> extends MyCollection<E>
-{
+public interface MyList<E> extends MyCollection<E> {
     /**
      * 新增一个元素到指定位置
      *

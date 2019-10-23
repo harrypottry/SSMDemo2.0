@@ -5,6 +5,5 @@ package com.hp.ibatis.annotation;
  * @时间：18-12-21-下午5:19
  * @说明：
  */
-public @interface MyManyToOne
-{
+public @interface MyManyToOne {
 }
