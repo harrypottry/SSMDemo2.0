@@ -6,6 +6,7 @@ package com.hp.ibatis.auto;
  * @说明：字段默认长度
  */
 public class AutoFieldLength {
+
     public static final int INT_LEN = 11;
     public static final int VARCHAR_LEN = 11;
     public static final int CHAR_LEN = 1;

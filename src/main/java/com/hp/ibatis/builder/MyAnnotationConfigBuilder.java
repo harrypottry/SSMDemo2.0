@@ -13,47 +13,38 @@ import java.util.Properties;
  * @时间：18-12-24-下午3:46
  * @说明：
  */
-public class MyAnnotationConfigBuilder extends MyBaseBuilder
-{
+public class MyAnnotationConfigBuilder extends MyBaseBuilder {
     private Properties properties;
     private boolean update;
     protected MyConfiguration configuration;
 
     public static final String SEPARATE;
 
-    static
-    {
+    static {
 
         String osName = System.getProperty("os.name");
-        if (osName.startsWith("Windows"))
-        {
+        if (osName.startsWith("Windows")) {
             SEPARATE = "\\";
-        } else
-        {
+        } else {
             SEPARATE = "/";
         }
     }
 
-    public MyAnnotationConfigBuilder(Properties properties, boolean update)
-    {
+    public MyAnnotationConfigBuilder(Properties properties, boolean update) {
         this.properties = properties;
         this.update = update;
     }
 
-    public MyAnnotationConfigBuilder(String path, boolean update)
-    {
+    public MyAnnotationConfigBuilder(String path, boolean update) {
         this.properties = new Properties();
-        try
-        {
+        try {
             properties.load(new FileInputStream("src/main/resources/" + path));
         } catch (Exception e)
         {
-            try
-            {
+            try {
                 InputStream is=MyAnnotationConfigBuilder.class.getClassLoader().getResourceAsStream(path);
                 properties.load(is);
-            } catch (Exception e1)
-            {
+            } catch (Exception e1) {
                 System.err.println("配置文件找不到");
                 e1.printStackTrace();
             }
@@ -62,15 +53,13 @@ public class MyAnnotationConfigBuilder extends MyBaseBuilder
     }
 
 
-    public MyConfiguration parse()
-    {
+    public MyConfiguration parse() {
         configuration = new MyConfiguration(properties);
         configuration.setUpdate(update);
         MySQLUtil.setConfiguration(configuration);
         // 3.自动建表
         System.out.println(update ? "开始自动建表" : "自动建表未开启");
-        if (update)
-        {
+        if (update) {
             new AutoTables();
         }
         return configuration;

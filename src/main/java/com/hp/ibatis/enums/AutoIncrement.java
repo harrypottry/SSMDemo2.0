@@ -5,7 +5,6 @@ package com.hp.ibatis.enums;
  * @时间：18-12-24-下午2:32
  * @说明：
  */
-public enum AutoIncrement
-{
+public enum AutoIncrement {
     TRUE,FALSE
 }
